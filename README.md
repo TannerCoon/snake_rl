@@ -2,6 +2,7 @@
 Reinforcement Learning For Snake Game 
 
 credit to: https://github.com/python-engineer/snake-ai-pytorch
+           https://github.com/maurock/snake-ga
 
 ## Recommended setup 
 Create and activate python3 environment specific for this project using the command 'python -m venv snake_rl'.
