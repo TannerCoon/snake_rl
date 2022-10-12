@@ -1,0 +1,1 @@
+Neural Network:{'first': 11, 'hidden1': 64, 'hidden2': None, 'output': 3}Leaning Rate0.001
