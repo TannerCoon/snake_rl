@@ -1,7 +1,8 @@
 # snake_rl
 Reinforcement Learning For Snake Game 
 
-credit to: https://github.com/python-engineer/snake-ai-pytorch
+credit to: https://www.youtube.com/watch?v=PJl4iabBEz0
+           https://github.com/python-engineer/snake-ai-pytorch
            https://github.com/maurock/snake-ga
 
 ## Recommended setup 
