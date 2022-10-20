@@ -1,4 +1,5 @@
-# snake_rl
+# snake_rl 
+#### GitHub Link: https://github.com/TannerCoon/snake_rl
 Reinforcement Learning For Snake Game 
 
 credit to: https://www.youtube.com/watch?v=PJl4iabBEz0
