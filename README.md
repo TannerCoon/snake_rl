@@ -13,8 +13,8 @@ Install the packages in the requirements.txt to it with pip.
 Run the commands from the parent directory above the cloned repository.
 
 ## How to run the AI driven game
-In the parent folder above the directory snake_rl/ run:
-python3 ./snake_rl/agent.py
+run:
+python3 ./agent.py
 
 ## Code components
 

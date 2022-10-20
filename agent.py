@@ -200,7 +200,7 @@ if __name__ == '__main__':
         with open(model_folder_path+'/params.txt', 'w') as pf:
             params = ['Neural Network:', str(nn_params), 'Leaning Rate', str(LR)]
             pf.writelines(params)
-
+        # run(test_name, dt_str, 50, nn_params, train=False, model_path='./snake_rl/model/20221011-17_31_33/Training__63.pth')
         model_path = run(train_name, dt_str, EPISODES, nn_params, train=True)
         run(test_name, dt_str, 50, nn_params, train=False, model_path=model_path)
     
