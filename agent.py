@@ -5,74 +5,131 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from game import SnakeGameAI, Direction, Point, BLOCK_SIZE
-from model import Linear_QNet, QTrainer
-from helper import plot
-from datetime import datetime
-import os
+from game import SnakeGameAI, Direction, Point
+from model import QTrainer
+import numpy as np
+from time import sleep
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
-LR = 0.001
-EPISODES = 200
 
 class Agent:
-    def __init__(self, nn_params, train = True, model_path = None):
+    def __init__(self, model, agent_params, game_params):
         self.n_games = 0
-        self.epsilon = 0 # randomness
+        self.epsilon = 80 # randomness
         self.gamma = 0.9 # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY) # popleft() if exceeds MAX_MEMORY
-        if train:
-            self.model = Linear_QNet(nn_params['first'], nn_params['hidden1'], nn_params['hidden2'], nn_params['output'])
-        else:
-            self.model = Linear_QNet(nn_params['first'], nn_params['hidden1'], nn_params['hidden2'], nn_params['output'],model_path)
-        self.trainer = QTrainer(self.model, lr = LR, gamma=self.gamma)
+        self.params = agent_params
+        self.game_params = game_params
+        self.memory = deque(maxlen = self.params['MAX_MEMORY']) # popleft() if exceeds MAX_MEMORY
+        
+
+        self.model = model
+        self.trainer = QTrainer(self.model, lr = self.params['LR'], gamma=self.gamma)
 
 
     def get_state(self, game):
         # [danger_straight, danger_right, danger_left, direction_left, direction_right, direction_up, direction_down, food_left, food_right, food_up, food_down]
         head = game.snake[0]
-        point_l = Point(head.x - BLOCK_SIZE, head.y)
-        point_r = Point(head.x + BLOCK_SIZE, head.y)
-        point_u = Point(head.x, head.y - BLOCK_SIZE)
-        point_d = Point(head.x, head.y + BLOCK_SIZE)
+        snake_body = game.snake[1:]
+        food = game.food
+        bs = self.game_params['BLOCK_SIZE']
+        w = self.game_params['WIDTH']
+        h = self.game_params['HEIGHT']
+        nRows = int(h/bs)
+        nColumns = int(w/bs)
+        if self.params['MODEL_MODE'] == 'PIXEL':
+            # state = np.zeros((nRows, nColumns), dtype=int)
+            # for seg in game.snake:
+            #     state[int(seg.y/bs)][int(seg.x/bs)] = 0.5
+            # if self.game_params['MULTI_FOOD']:
+            #     for f in food:
+            #         state[int(f.y/bs)][int(f.x/bs)] = 2
+            # else:
+            #     state[int(food.y/bs)][int(food.x/bs)] = 10
+            # state = [[state]]
+            # state = game.get_pixel_matricies()
+            f_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
+            s_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
+            b_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
+            # set walls:
+            b_grid[0] = [0.5 for i in range(int(w/bs)+2)]
+            b_grid[-1] = [0.5 for i in range(int(w/bs)+2)]
+            for line in b_grid:
+                line[0] = 0.5
+                line[-1] = 0.5
+            if self.game_params['MULTI_FOOD']:
+                for f in food:
+                    f_grid[int(f.y/bs)+1][int(f.x/bs)+1] = 10
+            else:
+                f_grid[int(food.y/bs)+1][int(food.x/bs)+1] = 10
+            # f_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 10
+            s_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 1
+            # dir_l = game.direction == Direction.LEFT
+            # dir_r = game.direction == Direction.RIGHT
+            # dir_u = game.direction == Direction.UP
+            # dir_d = game.direction == Direction.DOWN
+            # try:
+            #     if dir_l:
+            #         h_grid[int(head.y/bs)+1][int(head.x/bs)+1-1] = 1
+            #     elif dir_r:
+            #         h_grid[int(head.y/bs)+1][int(head.x/bs)+1+1] = 1
+            #     elif dir_u:
+            #         h_grid[int(head.y/bs)+1-1][int(head.x/bs)+1] = 1
+            #     else:
+            #         h_grid[int(head.y/bs)+1+1][int(head.x/bs)+1] = 1
+            # except:
+            #     pass
 
-        dir_l = game.direction == Direction.LEFT
-        dir_r = game.direction == Direction.RIGHT
-        dir_u = game.direction == Direction.UP
-        dir_d = game.direction == Direction.DOWN
+            # b_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 10
+            for seg in snake_body:
+                s_grid[int(seg.y/bs+1)][int(seg.x/bs+1)] = 1
+            # print('______________________________')
+            # for line in grid:
+            #     print(line)
+            # state = np.concatenate(grid)
+            state = [f_grid, s_grid, b_grid]
+        else:
+        
+            # print([(p.x/bs, p.y/bs) for p in snake_body])
+            point_l = Point(head.x - bs, head.y)
+            point_r = Point(head.x + bs, head.y)
+            point_u = Point(head.x, head.y - bs)
+            point_d = Point(head.x, head.y + bs)
 
-        state = [
-            # Danger straight
-            (dir_r and game.is_collision(point_r)) or
-            (dir_l and game.is_collision(point_l)) or
-            (dir_u and game.is_collision(point_u)) or
-            (dir_d and game.is_collision(point_d)),
+            dir_l = game.direction == Direction.LEFT
+            dir_r = game.direction == Direction.RIGHT
+            dir_u = game.direction == Direction.UP
+            dir_d = game.direction == Direction.DOWN
 
-            # Danger right
-            (dir_u and game.is_collision(point_r)) or
-            (dir_d and game.is_collision(point_l)) or
-            (dir_l and game.is_collision(point_u)) or
-            (dir_r and game.is_collision(point_d)),
+            state = [
+                # Danger straight
+                (dir_r and game.is_collision(point_r)) or
+                (dir_l and game.is_collision(point_l)) or
+                (dir_u and game.is_collision(point_u)) or
+                (dir_d and game.is_collision(point_d)),
 
-            # Danger left
-            (dir_d and game.is_collision(point_r)) or
-            (dir_u and game.is_collision(point_l)) or
-            (dir_r and game.is_collision(point_u)) or
-            (dir_l and game.is_collision(point_d)),
+                # Danger right
+                (dir_u and game.is_collision(point_r)) or
+                (dir_d and game.is_collision(point_l)) or
+                (dir_l and game.is_collision(point_u)) or
+                (dir_r and game.is_collision(point_d)),
 
-            # Move direction
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
+                # Danger left
+                (dir_d and game.is_collision(point_r)) or
+                (dir_u and game.is_collision(point_l)) or
+                (dir_r and game.is_collision(point_u)) or
+                (dir_l and game.is_collision(point_d)),
 
-            # Food location
-            game.food.x < game.head.x, # food left
-            game.food.x > game.head.x, # food right
-            game.food.y < game.head.y, # food up
-            game.food.y > game.head.y # food down
-        ]
+                # Move direction
+                dir_l,
+                dir_r,
+                dir_u,
+                dir_d,
+
+                # Food location
+                game.food.x < game.head.x, # food left
+                game.food.x > game.head.x, # food right
+                game.food.y < game.head.y, # food up
+                game.food.y > game.head.y # food down
+            ]
         
         return np.array(state, dtype=int)
 
@@ -81,8 +138,8 @@ class Agent:
         self.memory.append((state, action, reward, next_state, done)) # popleft if MAX_MEMORY is reached
 
     def train_long_memeory(self):
-        if len(self.memory) > BATCH_SIZE:
-            mini_sample = random.sample(self.memory, BATCH_SIZE) # List of tuples
+        if len(self.memory) > self.params['BATCH_SIZE']:
+            mini_sample = random.sample(self.memory, self.params['BATCH_SIZE']) # List of tuples
         else:
             mini_sample = self.memory
         
@@ -100,34 +157,37 @@ class Agent:
             self.epsilon = 0
         final_move = [0,0,0]
         if random.randint(0,200) < self.epsilon:
-            move = random.randint(0, 2)
-            final_move[move] = 1
+            if self.params['RANDOM_CHOICE'] == 'TRUE_RAND':
+                move = random.randint(0, 2)
+            else:
+                state0 = torch.tensor(state, dtype=torch.float)
+                if self.params['MODEL_MODE'] == 'PIXEL':
+                    prediction = self.model(state0)[0]
+                else:
+                    prediction = self.model(state0)
+                pred = [p + torch.abs(torch.min(prediction)).item() for p in prediction.tolist()]
+                pred_pd = [i/sum(pred) for i in pred]
+                move = np.random.choice([0,1,2], p = pred_pd)
         
         else:
             state0 = torch.tensor(state, dtype=torch.float)
-            prediction = self.model(state0)
+            if self.params['MODEL_MODE'] == 'PIXEL':
+                prediction = self.model(state0)[0]
+            else:
+                prediction = self.model(state0)
+            # print(prediction)
             move = torch.argmax(prediction).item()
-            final_move[move] = 1
+        final_move[move] = 1
         
         return final_move
 
 
-def run(run_name, dt_str, episodes, nn_params, train = True, model_path = None):
+def run_game(run_name, dt_str, agent_params, game_params, model, x_pos, y_pos, p, proc_scores, train = True):
     plot_scores = []
-    plot_mean_scores = []
-    plot_total_mean_scores = []
-    total_score = 0
     record = 0 # best score
-    if train:
-        agent = Agent(nn_params) 
-    else:
-        agent = Agent(nn_params, train, model_path)
-    game = SnakeGameAI()
-    if train:
-        plot_title = 'Training...'
-    else:
-        plot_title = 'Testing...'
-    while agent.n_games <= episodes:
+    agent = Agent(model, agent_params, game_params) 
+    game = SnakeGameAI(game_params, x = x_pos, y = y_pos)
+    while agent.n_games <= agent_params['EPISODES']:
         # get old state
         state_old = agent.get_state(game)
 
@@ -161,46 +221,4 @@ def run(run_name, dt_str, episodes, nn_params, train = True, model_path = None):
             print(f'Game: {agent.n_games}, Score: {score}, Record: {record}')
 
             plot_scores.append(score)
-            total_score += score
-            if len(plot_scores) > 10:
-                mean_score = sum(plot_scores[-10:]) / 10
-            else:
-                mean_score = sum(plot_scores) / len(plot_scores)
-            plot_mean_scores.append(mean_score)
-            total_mean_score = total_score / agent.n_games
-            plot_total_mean_scores.append(total_mean_score)
-            plot(plot_scores, plot_mean_scores, plot_total_mean_scores, plot_title)
-    plot(plot_scores, plot_mean_scores, plot_total_mean_scores, fig_plot_name=f"{run_name}_{dt_str}.png")
-    if train:
-        file_name = f'{run_name}__{record}.pth'
-        model_folder_path = f'./snake_rl/model/{dt_str}'
-        model_path = os.path.join(model_folder_path, file_name)
-    else:
-
-        model_path = None
-    return model_path
-
-
-
-
-if __name__ == '__main__':
-    model_params = [{'first': 11, 'hidden1': 256, 'hidden2': None, 'output': 3}, 
-                    {'first': 11, 'hidden1': 64, 'hidden2': None, 'output': 3}, 
-                    {'first': 11, 'hidden1': 64, 'hidden2': 64, 'output': 3}, 
-                    {'first': 11, 'hidden1': 256, 'hidden2':256, 'output': 3}]
-    for nn_params in model_params:
-        train_name = "Training"
-        test_name = "Testing"
-        now = datetime.now()
-        dt_str = now.strftime("%Y%m%d-%H_%M_%S")
-
-        model_folder_path = f'./snake_rl/model/{dt_str}'
-        if not os.path.exists(model_folder_path):
-            os.makedirs(model_folder_path)
-        with open(model_folder_path+'/params.txt', 'w') as pf:
-            params = ['Neural Network:', str(nn_params), 'Leaning Rate', str(LR)]
-            pf.writelines(params)
-        # run(test_name, dt_str, 50, nn_params, train=False, model_path='./snake_rl/model/20221011-17_31_33/Training__63.pth')
-        model_path = run(train_name, dt_str, EPISODES, nn_params, train=True)
-        run(test_name, dt_str, 50, nn_params, train=False, model_path=model_path)
-    
+    proc_scores.put((p, plot_scores))
