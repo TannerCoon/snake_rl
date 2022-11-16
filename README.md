@@ -15,7 +15,7 @@ Run the commands from the parent directory above the cloned repository.
 
 ## How to run the AI driven game
 run:
-python3 ./agent.py
+python3 ./train.py
 
 ## Code components
 
