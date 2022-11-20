@@ -3,6 +3,7 @@
 Reinforcement Learning For Snake Game 
 
 credit to: https://www.youtube.com/watch?v=PJl4iabBEz0
+           https://www.youtube.com/watch?v=i0Pkgtbh1xw
            https://github.com/python-engineer/snake-ai-pytorch
            https://github.com/maurock/snake-ga
 
@@ -16,6 +17,9 @@ Run the commands from the parent directory above the cloned repository.
 ## How to run the AI driven game
 run:
 python3 ./train.py
+
+### To adjust parameters:
+Adjust parameters found in train.py
 
 ## Code components
 
@@ -44,3 +48,6 @@ Directory that contains saved images of the Training and Testing score plots.
 
 ### model/
 Directoy that contains the saved training models that obtained the record score during the training episodes. You will also find a params.txt within each timestamped subdirectory that identifies the hyperparameters used in the model for training.
+
+### model_cnn/
+Directoy that contains the saved training models that obtained the record score during the training episodes that use the Convolutional Neural Network when MODEL_MODE parameter is set to PIXEL. You will also find a params.txt within each timestamped subdirectory that identifies the hyperparameters used in the model for training.

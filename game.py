@@ -100,16 +100,19 @@ class SnakeGameAI:
         prev_head = self.snake[0]
         self._move(action) # update the head
         self.snake.insert(0, self.head)
-        prev_diff = abs(prev_head.x - self.food.x) + abs(prev_head.y - self.food.y)
-        cur_diff = abs(self.snake[0].x - self.food.x) + abs(self.snake[0].y - self.food.y)
-        if prev_diff > cur_diff:
-            # print('closer')
-            reward = 10
-        else:
-            reward = -10
-            # print('further')
+
+        ## Movement reward
+        # prev_diff = abs(prev_head.x - self.food.x) + abs(prev_head.y - self.food.y)
+        # cur_diff = abs(self.snake[0].x - self.food.x) + abs(self.snake[0].y - self.food.y)
+        # if prev_diff > cur_diff:
+        #     # print('closer')
+        #     reward = 1
+        # else:
+        #     reward = -1
+        #    # print('further')
         # print(prev_head, self.snake[0], self.food)
         # 3. check if game over
+        
         game_over = False
         if self.is_collision() or self.steps <= 0 or self.steps_since_food >= 150: # or (self.game_n < 50 and self.steps_since_food >= 15):
             game_over = True
@@ -158,23 +161,6 @@ class SnakeGameAI:
         self.display.fill(BLACK)
         
         pygame.draw.rect(self.display, GREEN, pygame.Rect(self.head.x, self.head.y, self.params['BLOCK_SIZE'], self.params['BLOCK_SIZE']))
-        # dir_l = self.direction == Direction.LEFT
-        # dir_r = self.direction == Direction.RIGHT
-        # dir_u = self.direction == Direction.UP
-        # dir_d = self.direction == Direction.DOWN
-        # if dir_l:
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+1, self.head.y+1, 2, 2))
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+1, self.head.y+self.params['BLOCK_SIZE']-3, 2, 2))
-        # elif dir_r:
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x-2 + self.params['BLOCK_SIZE'], self.head.y+2, 2, 2))
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x-2 + self.params['BLOCK_SIZE'], self.head.y+self.params['BLOCK_SIZE']-3, 2, 2))
-        # elif dir_u:
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+2, self.head.y+1, 2, 2))
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+self.params['BLOCK_SIZE']-3, self.head.y+1, 2, 2))
-        # else:
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+2, self.head.y+self.params['BLOCK_SIZE']-3, 2, 2))
-        #     pygame.draw.rect(self.display, DARK_GREEN, pygame.Rect(self.head.x+self.params['BLOCK_SIZE']-3, self.head.y+self.params['BLOCK_SIZE']-3, 2, 2))
-
         for pt in self.snake[1:]:
             pygame.draw.rect(self.display, BLUE1, pygame.Rect(pt.x, pt.y, self.params['BLOCK_SIZE'], self.params['BLOCK_SIZE']))
             pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x+4, pt.y+4, 12, 12))

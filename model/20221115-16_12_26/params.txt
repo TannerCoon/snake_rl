@@ -1,1 +1,0 @@
-Neural Network:{'input_channels': 10} Agent:{'EPISODES': 300, 'LR': 0.0001, 'BATCH_SIZE': 1000, 'MAX_MEMORY': 100000, 'RANDOM_CHOICE': 'PDF', 'MODEL_MODE': 'PIXEL'}

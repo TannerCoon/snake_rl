@@ -36,6 +36,7 @@ class Agent:
         nRows = int(h/bs)
         nColumns = int(w/bs)
         if self.params['MODEL_MODE'] == 'PIXEL':
+            ## Create single matrix channel
             # state = np.zeros((nRows, nColumns), dtype=int)
             # for seg in game.snake:
             #     state[int(seg.y/bs)][int(seg.x/bs)] = 0.5
@@ -45,7 +46,11 @@ class Agent:
             # else:
             #     state[int(food.y/bs)][int(food.x/bs)] = 10
             # state = [[state]]
+
+            ## Get Pixel values:
             # state = game.get_pixel_matricies()
+
+            ## Create food, head and body/wall channels:
             f_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
             s_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
             b_grid = np.zeros((nRows+2, nColumns+2), dtype=int)
@@ -62,6 +67,10 @@ class Agent:
                 f_grid[int(food.y/bs)+1][int(food.x/bs)+1] = 10
             # f_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 10
             s_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 1
+            for seg in snake_body:
+                s_grid[int(seg.y/bs+1)][int(seg.x/bs+1)] = 1
+
+            # Add additional value in front of snake head for
             # dir_l = game.direction == Direction.LEFT
             # dir_r = game.direction == Direction.RIGHT
             # dir_u = game.direction == Direction.UP
@@ -79,15 +88,15 @@ class Agent:
             #     pass
 
             # b_grid[int(head.y/bs)+1][int(head.x/bs)+1] = 10
-            for seg in snake_body:
-                s_grid[int(seg.y/bs+1)][int(seg.x/bs+1)] = 1
+            
             # print('______________________________')
             # for line in grid:
             #     print(line)
+
             # state = np.concatenate(grid)
             state = [f_grid, s_grid, b_grid]
         else:
-        
+        # Midterm State "True_Random"
             # print([(p.x/bs, p.y/bs) for p in snake_body])
             point_l = Point(head.x - bs, head.y)
             point_r = Point(head.x + bs, head.y)

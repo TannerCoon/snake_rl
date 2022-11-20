@@ -1,1 +1,0 @@
-Neural Network:{'first': 11, 'hidden1': 256, 'hidden2': None, 'output': 3} Agent:{'EPISODES': 500, 'LR': 0.001, 'BATCH_SIZE': 1000, 'MAX_MEMORY': 100000, 'RANDOM_CHOICE': 'TRUE_RAND', 'MODEL_MODE': 'OG'}

@@ -1,1 +1,0 @@
-Neural Network:{'first': 144, 'hidden1': 256, 'hidden2': 64, 'output': 3} Agent:{'EPISODES': 150, 'LR': 0.001, 'BATCH_SIZE': 1000, 'MAX_MEMORY': 100000, 'RANDOM_CHOICE': 'PDF', 'MODEL_MODE': 'PIXEL'}

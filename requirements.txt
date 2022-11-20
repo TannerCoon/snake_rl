@@ -4,3 +4,4 @@ torchvision
 matplotlib
 ipython
 datetime
+numpy
